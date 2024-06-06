@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const {tareas} = require("./db");
+const {tareas, crearTarea, borrarTarea, toggleEstado,editarTexto} = require("./db");
 
 const express = require("express");
 const {json} = require("body-parser");
@@ -24,10 +24,33 @@ servidor.get("/tareas", async (peticion,respuesta) => {
     }
 })
 
-servidor.post("/tareas/nueva", (peticion,respuesta) => {
-    console.log(peticion.body);
-    respuesta.send("hola");
+servidor.post("/tareas/nueva", async (peticion,respuesta,siguiente) => {
+    if(!peticion.body.tarea || peticion.body.tarea.trim() == "" ){
+        return siguiente(true);
+    }
+    try{
 
+        let id = await  crearTarea(peticion.body.tarea);
+
+        respuesta.json({id});
+
+    }catch(error){
+        respuesta.status(500);
+
+        respuesta.json(error);
+    }
+})
+
+servidor.delete("/tareas/borrar/:id([0-9]+)", async (peticion,respuesta) => {
+    try{
+        let count = await borrarTarea(peticion.params.id);
+
+        respuesta.json({resultado : count ? "ok" : "ko"});
+    }catch(error){
+        respuesta.status(500);
+
+        respuesta.json(error);
+    }
 })
 
 servidor.use((peticion,respuesta) => {
@@ -36,7 +59,6 @@ servidor.use((peticion,respuesta) => {
 })
 
 servidor.use((error,peticion,respuesta,siguiente) => {
-    console.log(error);
     respuesta.status(400);
     respuesta.json({error:"error en la petición"});
 })
