@@ -1,12 +1,14 @@
 require("dotenv").config();
 
 const {tareas, crearTarea, borrarTarea, toggleEstado,editarTexto} = require("./db");
-
+const cors = require("cors");
 const express = require("express");
 const {json} = require("body-parser");
 const servidor = express();
 
-servidor.use(json())
+
+servidor.use(cors());
+servidor.use(json());
 
 if(process.env.LOCAL){
     servidor.use(express.static("./pruebas"))
